@@ -1,0 +1,111 @@
+ content/common/sandbox_win.cc | 90 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 90 insertions(+)
+
+diff --git a/content/common/sandbox_win.cc b/content/common/sandbox_win.cc
+index fe26622..0d8d3d0 100644
+--- a/content/common/sandbox_win.cc
++++ b/content/common/sandbox_win.cc
+@@ -662,6 +662,41 @@ bool InitTargetServices(sandbox::TargetServices* target_services) {
+   return sandbox::SBOX_ALL_OK == result;
+ }
+ 
++void split(std::wstring s, wchar_t delimiter, std::vector<std::wstring>& parts, bool allowEmptyParts = true)
++{
++	if (!parts.empty()) parts.clear();
++
++	auto length = s.length();
++	size_t start = 0;
++	size_t end;
++
++	for (;;)
++	{
++		if (start >= length)
++		{
++			if (allowEmptyParts) parts.push_back(std::wstring());
++			return;
++		}
++
++		end = s.find(delimiter, start);
++
++		if (end == std::string::npos)
++		{
++			parts.push_back(s.substr(start));
++			return;
++		}
++		else
++		{
++			if (end > start || allowEmptyParts)
++			{
++				parts.push_back(s.substr(start, end - start));
++			}
++		}
++
++		start = end + 1;
++	}
++}
++
+ base::Process StartSandboxedProcess(
+     SandboxedProcessLauncherDelegate* delegate,
+     base::CommandLine* cmd_line,
+@@ -790,6 +825,61 @@ base::Process StartSandboxedProcess(
+   policy->SetStdoutHandle(GetStdHandle(STD_OUTPUT_HANDLE));
+   policy->SetStderrHandle(GetStdHandle(STD_ERROR_HANDLE));
+ #endif
++  
++  {
++	  base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
++
++	  auto itPipeServers = switches.find("pipe-servers");
++	  if (itPipeServers != switches.end()) {
++		  std::vector<std::wstring> servers;
++		  split((*itPipeServers).second, L';', servers);
++		  for (auto itPipeServer = servers.begin(); itPipeServer != servers.end(); ++itPipeServer)
++		  {
++		    if (!(*itPipeServer).empty()) {
++			  std::wstring wsPattern = L"\\\\.\\pipe\\" + (*itPipeServer);
++			  policy->AddRule(sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
++				  sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
++				  wsPattern.c_str());
++
++			  // Add the policy for the client side of a pipe. It is just a file
++			  // in the \pipe\ namespace. 
++			  wsPattern = L"\\??\\pipe\\" + (*itPipeServer);
++			  policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
++				  sandbox::TargetPolicy::FILES_ALLOW_ANY,
++				  wsPattern.c_str());
++			}
++		  }
++	  }
++
++	  auto itFolders = switches.find("folders");
++	  if (itFolders != switches.end()) {
++		  std::vector<std::wstring> folders;
++		  split((*itFolders).second, L';', folders);
++		  for (auto itFolder = folders.begin(); itFolder != folders.end(); ++itFolder)
++		  {
++		    if (!(*itFolder).empty()) {
++			  policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
++				  sandbox::TargetPolicy::FILES_ALLOW_ANY,
++				  (*itFolder).c_str());
++			}
++		  }
++	  }
++
++	  auto itRegistryKeys = switches.find("registry-keys");
++	  if (itRegistryKeys != switches.end()) {
++		  std::vector<std::wstring> registryKeys;
++		  split((*itRegistryKeys).second, L';', registryKeys);
++		  for (auto itRegistryKey = registryKeys.begin(); itRegistryKey != registryKeys.end(); ++itRegistryKey)
++		  {
++		    if (!(*itRegistryKey).empty()) {
++			  std::wstring wsKey = (*itRegistryKey);
++			  policy->AddRule(sandbox::TargetPolicy::SUBSYS_REGISTRY, sandbox::TargetPolicy::REG_ALLOW_ANY, wsKey.c_str());
++			  wsKey += L"\\*";
++			  policy->AddRule(sandbox::TargetPolicy::SUBSYS_REGISTRY, sandbox::TargetPolicy::REG_ALLOW_ANY, wsKey.c_str());
++			}
++		  }
++	  }
++  }
+ 
+   if (!delegate->PreSpawnTarget(policy))
+     return base::Process();
