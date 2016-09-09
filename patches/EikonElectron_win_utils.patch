@@ -5,7 +5,7 @@ diff --git a/sandbox/win/src/win_utils.cc b/sandbox/win/src/win_utils.cc
 index 178fd91..ba48c9c 100644
 --- a/sandbox/win/src/win_utils.cc
 +++ b/sandbox/win/src/win_utils.cc
-@@ -122,6 +122,21 @@ bool IsPipe(const base::string16& path) {
+@@ -121,6 +122,21 @@ bool IsPipe(const base::string16& path) {
    return EqualPath(path, start, kPipe, arraysize(kPipe) - 1);
  }
  
@@ -27,7 +27,7 @@ index 178fd91..ba48c9c 100644
  HKEY GetReservedKeyFromName(const base::string16& name) {
    for (size_t i = 0; i < arraysize(kKnownKey); ++i) {
      if (name == kKnownKey[i].name)
-@@ -164,6 +179,9 @@ DWORD IsReparsePoint(const base::string16& full_path) {
+@@ -163,6 +179,9 @@ DWORD IsReparsePoint(const base::string16& full_path) {
    if (IsPipe(full_path))
      return ERROR_NOT_A_REPARSE_POINT;
  
@@ -37,7 +37,7 @@ index 178fd91..ba48c9c 100644
    base::string16 path;
    bool nt_path = IsNTPath(full_path, &path);
    bool has_drive = StartsWithDriveLetter(path);
-@@ -217,6 +235,9 @@ bool SameObject(HANDLE handle, const wchar_t* full_path) {
+@@ -216,6 +235,9 @@ bool SameObject(HANDLE handle, const wchar_t* full_path) {
    if (IsPipe(full_path))
      return true;
  
@@ -47,7 +47,7 @@ index 178fd91..ba48c9c 100644
    base::string16 actual_path;
    if (!GetPathFromHandle(handle, &actual_path))
      return false;
-@@ -282,6 +303,9 @@ bool ConvertToLongPath(base::string16* path) {
+@@ -281,6 +303,9 @@ bool ConvertToLongPath(base::string16* path) {
    if (IsPipe(*path))
      return true;
  
