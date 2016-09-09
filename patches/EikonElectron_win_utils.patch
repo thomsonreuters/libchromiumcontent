@@ -1,6 +1,5 @@
  sandbox/win/src/win_utils.cc | 24 ++++++++++++++++++++++++
- sandbox/win/src/win_utils.h  |  3 +++
- 2 files changed, 27 insertions(+)
+ 1 file changed, 24 insertions(+)
 
 diff --git a/sandbox/win/src/win_utils.cc b/sandbox/win/src/win_utils.cc
 index 178fd91..ba48c9c 100644
@@ -58,17 +57,3 @@ index 178fd91..ba48c9c 100644
    base::string16 temp_path;
    if (IsDevicePath(*path, &temp_path))
      return false;
-diff --git a/sandbox/win/src/win_utils.h b/sandbox/win/src/win_utils.h
-index f7895c1..2d615bf 100644
---- a/sandbox/win/src/win_utils.h
-+++ b/sandbox/win/src/win_utils.h
-@@ -108,6 +108,9 @@ bool WriteProtectedChildMemory(HANDLE child_process, void* address,
- // Returns true if the provided path points to a pipe.
- bool IsPipe(const base::string16& path);
- 
-+// Returns true if the provided path points to MountPointManager.
-+bool IsMountPointManager(const base::string16& path);
-+
- }  // namespace sandbox
- 
- // Resolves a function name in NTDLL to a function pointer. The second parameter

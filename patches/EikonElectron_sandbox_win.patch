@@ -44,7 +44,7 @@ index fe26622..0d8d3d0 100644
 +	}
 +}
 +
- base::Process StartSandboxedProcess(
+ sandbox::ResultCode StartSandboxedProcess(
      SandboxedProcessLauncherDelegate* delegate,
      base::CommandLine* cmd_line,
 @@ -790,6 +825,61 @@ base::Process StartSandboxedProcess(
@@ -108,4 +108,4 @@ index fe26622..0d8d3d0 100644
 +  }
  
    if (!delegate->PreSpawnTarget(policy))
-     return base::Process();
+     return sandbox::SBOX_ERROR_DELEGATE_PRE_SPAWN;
