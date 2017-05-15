@@ -1,12 +1,8 @@
 # libchromiumcontent
 
-A single, shared library that includes the [Chromium Content
+Automatically builds and provides prebuilt binaries of the [Chromium Content
 module](http://www.chromium.org/developers/content-module) and all its
 dependencies (e.g., Blink, V8, etc.).
-
-## Using it in your app
-
-TODO
 
 ## Development
 
@@ -14,7 +10,7 @@ TODO
 
 * [Linux](https://chromium.googlesource.com/chromium/src/+/master/docs/linux_build_instructions_prerequisites.md)
 * [Mac](https://chromium.googlesource.com/chromium/src/+/master/docs/mac_build_instructions.md#Prerequisites)
-* [Windows](http://dev.chromium.org/developers/how-tos/build-instructions-windows)
+* [Windows](https://chromium.googlesource.com/chromium/src/+/master/docs/windows_build_instructions.md)
 
 ### One-time setup
 
@@ -27,14 +23,16 @@ TODO
 
 ### Updating project files
 
-If you change `VERSION` to point to a different Chromium release, or modify
-`chromiumcontent.gyp{,i}`, you should run:
+If you switch to a different Chromium release, or modify
+files inside the `chromiumcontent` directory, you should run:
 
     $ script/update
 
 This will regenerate all the project files. Then you can build again.
 
 ### Building for ARM target
+
+> TODO: This section may be out of date, needs review
 
 ```bash
 $ ./script/bootstrap

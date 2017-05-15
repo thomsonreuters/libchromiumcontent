@@ -1,0 +1,88 @@
+diff --git a/BUILD.gn b/BUILD.gn
+index 8895103222..fedab53463 100644
+--- a/BUILD.gn
++++ b/BUILD.gn
+@@ -134,7 +134,7 @@ config("internal_config") {
+ 
+   include_dirs = [ "." ]
+ 
+-  if (is_component_build) {
++  if (is_component_build || is_electron_build) {
+     defines = [ "BUILDING_V8_SHARED" ]
+   }
+ }
+@@ -172,7 +172,7 @@ config("libsampler_config") {
+ # This config should only be applied to code using V8 and not any V8 code
+ # itself.
+ config("external_config") {
+-  if (is_component_build) {
++  if (is_component_build || is_electron_build) {
+     defines = [ "USING_V8_SHARED" ]
+   }
+   include_dirs = [ "include" ]
+@@ -2482,6 +2482,8 @@ if (current_toolchain == v8_snapshot_toolchain) {
+ 
+     configs = [ ":internal_config" ]
+ 
++    configs += [ "//chromiumcontent:build_time_executable" ]
++
+     deps = [
+       ":v8_base",
+       ":v8_libbase",
+@@ -2514,6 +2516,8 @@ v8_executable("mkpeephole") {
+     ":internal_config",
+   ]
+ 
++  configs += [ "//chromiumcontent:build_time_executable" ]
++
+   deps = [
+     ":v8_libbase",
+     "//build/config/sanitizers:deps",
+@@ -2588,7 +2592,7 @@ group("v8_fuzzers") {
+   ]
+ }
+ 
+-if (is_component_build) {
++if (is_component_build || is_electron_build) {
+   v8_component("v8") {
+     sources = [
+       "src/v8dll-main.cc",
+diff --git a/gni/v8.gni b/gni/v8.gni
+index ea628e0000..710f7aaf4d 100644
+--- a/gni/v8.gni
++++ b/gni/v8.gni
+@@ -4,6 +4,7 @@
+ 
+ import("//build/config/sanitizers/sanitizers.gni")
+ import("//build/config/v8_target_cpu.gni")
++import("//chromiumcontent/config.gni")
+ 
+ declare_args() {
+   # Includes files needed for correctness fuzzing.
+@@ -143,7 +144,12 @@ template("v8_executable") {
+ }
+ 
+ template("v8_component") {
+-  component(target_name) {
++  if (is_component_build || target_name == "v8") {
++    v8_component = component_electron
++  } else {
++    v8_component = "source_set"
++  }
++  target(v8_component, target_name) {
+     forward_variables_from(invoker, "*", [ "configs" ])
+     configs += invoker.configs
+     configs -= v8_remove_configs
+diff --git a/src/inspector/BUILD.gn b/src/inspector/BUILD.gn
+index e6742c09f7..ef3876d1d8 100644
+--- a/src/inspector/BUILD.gn
++++ b/src/inspector/BUILD.gn
+@@ -106,7 +106,7 @@ config("inspector_config") {
+       "/wd4996",  # Deprecated function call.
+     ]
+   }
+-  if (is_component_build) {
++  if (is_component_build || is_electron_build) {
+     defines = [ "BUILDING_V8_SHARED" ]
+   }
+ }

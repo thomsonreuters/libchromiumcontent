@@ -1,23 +1,26 @@
 diff --git a/third_party/WebKit/Source/core/frame/LocalFrame.cpp b/third_party/WebKit/Source/core/frame/LocalFrame.cpp
-index 5477e36..f49dfa5 100644
+index 6fa75cf..04c6a96 100644
 --- a/third_party/WebKit/Source/core/frame/LocalFrame.cpp
 +++ b/third_party/WebKit/Source/core/frame/LocalFrame.cpp
-@@ -389,10 +389,6 @@ void LocalFrame::detach(FrameDetachType type)
-     m_loader.stopAllLoaders();
-     m_loader.detach();
-     document()->detach();
--    // This is the earliest that scripting can be disabled:
--    // - FrameLoader::detach() can fire XHR abort events
--    // - Document::detach()'s deferred widget updates can run script.
--    ScriptForbiddenScope forbidScript;
-     m_loader.clear();
-     // Clear FrameScheduler again in case it is recreated in scripting.
-     m_frameScheduler.reset();
-@@ -403,6 +399,7 @@ void LocalFrame::detach(FrameDetachType type)
-     // Notify ScriptController that the frame is closing, since its cleanup ends up calling
-     // back to FrameLoaderClient via WindowProxy.
-     script().clearForClose();
-+    ScriptForbiddenScope forbidScript;
-     setView(nullptr);
-     willDetachFrameHost();
-     InspectorInstrumentation::frameDetachedFromParent(this);
+@@ -426,10 +426,6 @@ void LocalFrame::detach(FrameDetachType type) {
+   m_loader.stopAllLoaders();
+   m_loader.detach();
+   document()->shutdown();
+-  // This is the earliest that scripting can be disabled:
+-  // - FrameLoader::detach() can fire XHR abort events
+-  // - Document::shutdown()'s deferred widget updates can run script.
+-  ScriptForbiddenScope forbidScript;
+   m_loader.clear();
+   if (!client())
+     return;
+@@ -438,6 +434,10 @@ void LocalFrame::detach(FrameDetachType type) {
+   // Notify ScriptController that the frame is closing, since its cleanup ends
+   // up calling back to LocalFrameClient via WindowProxy.
+   script().clearForClose();
++  // This is the earliest that scripting can be disabled:
++  // - FrameLoader::detach() can fire XHR abort events
++  // - Document::shutdown()'s deferred widget updates can run script.
++  ScriptForbiddenScope forbidScript;
+   setView(nullptr);
+ 
+   m_host->eventHandlerRegistry().didRemoveAllEventHandlers(*domWindow());
